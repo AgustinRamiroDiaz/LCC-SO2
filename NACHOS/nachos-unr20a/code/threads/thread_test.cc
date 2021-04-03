@@ -46,10 +46,15 @@ ThreadTest()
 {
     DEBUG('t', "Entering thread test\n");
 
-    char *name = new char [64];
-    strncpy(name, "2nd", 64);
-    Thread *newThread = new Thread(name);
-    newThread->Fork(SimpleThread, (void *) name);
+    for (unsigned nthread = 1; nthread < 5; nthread++) {
+        char *name = new char [64];
+        strncpy(name, "2nd", 64);
+        Thread *newThread = new Thread(name);
+        newThread->Fork(SimpleThread, (void *) name);
+#ifdef SEMAPHORE_TEST
+
+#endif
+    }
 
     SimpleThread((void *) "1st");
 }
