@@ -14,11 +14,14 @@
 #include "system.hh"
 
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
+#include <string.h>
+#include <string>
 
 // Test Semaphore plancha 1 ejercicio 15
 #ifdef SEMAPHORE_TEST
+#include "synch.hh"
 Semaphore *sem = new Semaphore("Semaphore test.", 3);
 #endif
 
@@ -37,10 +40,10 @@ SimpleThread(void *name_)
     // behave incorrectly, because printf execution may cause race
     // conditions.
 
-    #ifdef SEMAPHORE_TEST
-    DEBUG('s', "El hilo %s llamo a P() \n");
+#ifdef SEMAPHORE_TEST
+    DEBUG('s', "El hilo %s llamo a P() \n", name);
     sem->P();
-    #endif
+#endif
 
     for (unsigned num = 0; num < 10; num++) {
         printf("*** Thread `%s` is running: iteration %u\n", name, num);
@@ -48,10 +51,10 @@ SimpleThread(void *name_)
     }
     printf("!!! Thread `%s` has finished\n", name);
 
-    #ifdef SEMAPHORE_TEST
-    DEBUG('s', "El hilo %s llamo a V() \n");
+#ifdef SEMAPHORE_TEST
+    DEBUG('s', "El hilo %s llamo a V() \n", name);
     sem->V();
-    #endif
+#endif
 
 }
 
@@ -64,12 +67,15 @@ ThreadTest()
 {
     DEBUG('t', "Entering thread test\n");
 
-    for (unsigned nthread = 1; nthread < 5; nthread++) {
+    for (unsigned nthread = 2; nthread <= 5; nthread++) {
         char *name = new char [64];
-        strncpy(name, "2nd", 64);
+        std::string str = std::to_string(nthread) + std::string("°");
+        strncpy(name, str.c_str(), 64);
         Thread *newThread = new Thread(name);
         newThread->Fork(SimpleThread, (void *) name);
     }
 
-    SimpleThread((void *) "1st");
+
+
+    SimpleThread((void *) "1°");
 }
