@@ -22,9 +22,8 @@ Turnstile(void *n_)
     unsigned *n = (unsigned *) n_;
 
     for (unsigned i = 0; i < ITERATIONS_PER_TURNSTILE; i++) {
-        int temp = count;
+        count++;
         currentThread->Yield();
-        count = temp + 1;
     }
     printf("Turnstile %u finished. Count is now %u.\n", *n, count);
     done[*n] = true;
