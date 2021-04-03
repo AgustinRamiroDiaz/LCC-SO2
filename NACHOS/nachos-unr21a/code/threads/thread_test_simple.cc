@@ -13,9 +13,10 @@
 #include <string.h>
 #include <string>
 
+#define SEMAPHORE_TEST
 // Test Semaphore plancha 1 ejercicio 15
 #ifdef SEMAPHORE_TEST
-#include "synch.hh"
+#include "semaphore.hh"
 Semaphore *sem = new Semaphore("Semaphore test.", 3);
 #endif
 
