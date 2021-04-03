@@ -107,7 +107,8 @@ thread_test_simple.o: ../threads/thread_test_simple.cc \
  ../lib/utility.hh ../machine/interrupt.hh ../machine/statistics.hh \
  ../machine/timer.hh ../filesys/synch_disk.hh ../threads/lock.hh \
  ../threads/semaphore.hh ../network/post.hh ../machine/network.hh \
- ../threads/synch_list.hh ../threads/condition.hh ../threads/lock.hh
+ ../threads/synch_list.hh ../threads/condition.hh ../threads/lock.hh \
+ ../threads/semaphore.hh
 assert.o: ../lib/assert.cc ../lib/assert.hh
 debug.o: ../lib/debug.cc ../lib/debug.hh ../lib/debug_opts.hh \
  ../lib/utility.hh ../lib/assert.hh ../machine/system_dep.hh

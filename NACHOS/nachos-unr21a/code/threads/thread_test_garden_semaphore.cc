@@ -9,6 +9,8 @@
 #include "system.hh"
 
 #include <stdio.h>
+#include "semaphore.hh"
+Semaphore *sem = new Semaphore("Semaphore initialization.", 1);
 
 
 static const unsigned NUM_TURNSTILES = 2;
@@ -22,9 +24,15 @@ Turnstile(void *n_)
     unsigned *n = (unsigned *) n_;
 
     for (unsigned i = 0; i < ITERATIONS_PER_TURNSTILE; i++) {
+        DEBUG('s', "Llamada a P() \n");
+        sem->P();
+
         int temp = count;
         currentThread->Yield();
         count = temp + 1;
+
+        DEBUG('s', "Llamada a V() \n");
+        sem->V();
     }
     printf("Turnstile %u finished. Count is now %u.\n", *n, count);
     done[*n] = true;
