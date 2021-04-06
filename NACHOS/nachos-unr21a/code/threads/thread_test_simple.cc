@@ -45,13 +45,13 @@ SimpleThread(void *name_)
         printf("*** Thread `%s` is running: iteration %u\n", name, num);
         currentThread->Yield();
     }
-    printf("!!! Thread `%s` has finished\n", name);
 
 #ifdef SEMAPHORE_TEST
     DEBUG('s', "El hilo %s llamo a V() \n", name);
     sem->V();
 #endif
 
+    printf("!!! Thread `%s` has finished\n", name);
 }
 
 /// Set up a ping-pong between several threads.
