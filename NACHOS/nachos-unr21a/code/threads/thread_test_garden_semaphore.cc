@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include "semaphore.hh"
-Semaphore *sem = new Semaphore("Semaphore initialization.", 1);
+static Semaphore *sem = new Semaphore("Semaphore initialization.", 1);
 
 
 static const unsigned NUM_TURNSTILES = 2;

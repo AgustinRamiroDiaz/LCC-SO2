@@ -17,7 +17,7 @@
 // Test Semaphore plancha 1 ejercicio 15
 #ifdef SEMAPHORE_TEST
 #include "semaphore.hh"
-Semaphore *sem = new Semaphore("Semaphore test.", 3);
+static Semaphore *sem = new Semaphore("Semaphore test.", 3);
 #endif
 
 
