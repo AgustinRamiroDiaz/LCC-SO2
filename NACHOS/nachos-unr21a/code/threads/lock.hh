@@ -17,6 +17,7 @@
 #ifndef NACHOS_THREADS_LOCK__HH
 #define NACHOS_THREADS_LOCK__HH
 
+#include "semaphore.hh"
 
 /// This class defines a “lock”.
 ///
@@ -51,13 +52,16 @@ public:
     ///
     /// Useful for checks in `Release` and in condition variables.
     bool IsHeldByCurrentThread() const;
-
+    
 private:
 
     /// For debugging.
     const char *name;
 
     // Add other needed fields here.
+    Semaphore* semaphore;
+
+    Thread* heldBy;
 };
 
 
