@@ -77,6 +77,10 @@ private:
     const char *name;
 
     // Other needed fields are to be added here.
+    int waitingThreads = 0;
+    Lock *atomicLock;
+    Lock *lock;
+    Semaphore *semaphore;
 };
 
 

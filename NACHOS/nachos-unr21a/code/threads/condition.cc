@@ -25,12 +25,16 @@
 
 Condition::Condition(const char *debugName, Lock *conditionLock)
 {
-    // TODO
+    name = debugName;
+    lock = conditionLock;
+    atomicLock = new Lock("Atomic Lock");
+    semaphore = new Semaphore(debugName, 0);
 }
 
 Condition::~Condition()
 {
-    // TODO
+    delete semaphore;
+    delete atomicLock;
 }
 
 const char *
@@ -42,17 +46,35 @@ Condition::GetName() const
 void
 Condition::Wait()
 {
-    // TODO
+    atomicLock->Acquire();
+    waitingThreads++;
+    atomicLock->Release();
+
+    lock->Release();
+    semaphore->P();
+    lock->Acquire();
 }
 
 void
 Condition::Signal()
 {
-    // TODO
+    atomicLock->Acquire();
+    if(waitingThreads > 0)
+    {
+        waitingThreads--;
+        semaphore->V();
+    }
+    atomicLock->Release();
 }
 
 void
 Condition::Broadcast()
 {
-    // TODO
+    atomicLock->Acquire();
+    while(waitingThreads > 0)
+    {
+        waitingThreads--;
+        semaphore->V();
+    }
+    atomicLock->Release();
 }
