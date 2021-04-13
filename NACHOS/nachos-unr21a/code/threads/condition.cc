@@ -27,7 +27,7 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
 {
     name = debugName;
     lock = conditionLock;
-    atomicLock = new Lock("Atomic Lock");
+    atomicLock = new Semaphore("Atomic Lock", 1);
     semaphore = new Semaphore(debugName, 0);
 }
 
