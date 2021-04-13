@@ -46,9 +46,9 @@ Condition::GetName() const
 void
 Condition::Wait()
 {
-    atomicLock->Acquire();
+    atomicLock->P();
     waitingThreads++;
-    atomicLock->Release();
+    atomicLock->V();
 
     lock->Release();
     semaphore->P();
@@ -58,23 +58,23 @@ Condition::Wait()
 void
 Condition::Signal()
 {
-    atomicLock->Acquire();
+    atomicLock->P();
     if(waitingThreads > 0)
     {
         waitingThreads--;
         semaphore->V();
     }
-    atomicLock->Release();
+    atomicLock->V();
 }
 
 void
 Condition::Broadcast()
 {
-    atomicLock->Acquire();
+    atomicLock->P();
     while(waitingThreads > 0)
     {
         waitingThreads--;
         semaphore->V();
     }
-    atomicLock->Release();
+    atomicLock->V();
 }
