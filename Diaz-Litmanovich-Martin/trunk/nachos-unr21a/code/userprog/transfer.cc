@@ -2,11 +2,9 @@
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
-
 #include "transfer.hh"
 #include "lib/utility.hh"
 #include "threads/system.hh"
-
 
 void ReadBufferFromUser(int userAddress, char *outBuffer,
                         unsigned byteCount)
@@ -15,13 +13,12 @@ void ReadBufferFromUser(int userAddress, char *outBuffer,
     ASSERT(outBuffer != nullptr);
     ASSERT(byteCount != 0);
 
-    unsigned count = 0;
-    do {
+    for (unsigned count = 0; count < byteCount; count++)
+    {
         int temp;
-        count++;
         ASSERT(machine->ReadMem(userAddress++, 1, &temp));
-        *outBuffer = (unsigned char) temp;
-    } while (count < byteCount);
+        *outBuffer = (unsigned char)temp;
+    }
 }
 
 bool ReadStringFromUser(int userAddress, char *outString,
@@ -32,11 +29,12 @@ bool ReadStringFromUser(int userAddress, char *outString,
     ASSERT(maxByteCount != 0);
 
     unsigned count = 0;
-    do {
+    do
+    {
         int temp;
         count++;
         ASSERT(machine->ReadMem(userAddress++, 1, &temp));
-        *outString = (unsigned char) temp;
+        *outString = (unsigned char)temp;
     } while (*outString++ != '\0' && count < maxByteCount);
 
     return *(outString - 1) == '\0';
@@ -45,7 +43,14 @@ bool ReadStringFromUser(int userAddress, char *outString,
 void WriteBufferToUser(const char *buffer, int userAddress,
                        unsigned byteCount)
 {
-    // TODO: implement.
+    ASSERT(userAddress != 0);
+    ASSERT(buffer != nullptr);
+    ASSERT(byteCount != 0);
+
+    for (unsigned count = 0; count < byteCount; count++)
+    {
+        ASSERT(machine->WriteMem(userAddress++, 1, (int)*buffer));
+    }
 }
 
 void WriteStringToUser(const char *string, int userAddress)
