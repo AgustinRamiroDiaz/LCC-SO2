@@ -1,0 +1,6 @@
+El problema de inversión de prioridades se produce cuando un proceso de prioridad baja utiliza un recurso que necesita un proceso de prioridad alta. Una forma de solucionarlo es promover el/los procesos que estén haciendo uso del recurso hasta que lo terminen de usar de forma de que los procesos de alta prioridad puedan continuar con su ejecución.
+
+En el caso de lock o variables de condición (que utilizan locks) es evidente a cual o cuales procesos se deben promover ya que el lock solamente puede ser liberado por el mismo proceso que lo tomó.
+> Ver implementación de Release en Lock para más info.
+
+En el caso de los semáforos, cualquier proceso puede hacer P() o V(), es decir, no hay garantías de que un proceso que decrementa el semáforo sea el mismo que el que lo incrementó. Entonces al no tener información sobre el proceso que va a incrementar el semáforo, se vuelve menos evidente cual o cuales procesos promover (para solucionar el problema de inversión de prioridades).

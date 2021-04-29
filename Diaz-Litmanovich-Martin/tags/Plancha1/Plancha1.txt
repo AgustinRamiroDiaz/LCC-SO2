@@ -1,0 +1,159 @@
+﻿1. Emular una CPU (en vez de usar una existente) tiene la ventaja de que te permite abstraer del hardware subyacente, en particular de los dispositivos de entrada/salida. Trabajar en una capa de abstracción superior permite ignorar ciertos detalles de las capas inferiores pero al mismo tiempo evita que se tenga un control real sobre lo que está pasando debajo. En este sentido, emular una CPU permite ignorar por ejemplo de qué forma se trabaja con la memoria a nivel físico al mismo tiempo que se evita tener control sobre ella.
+2. La memoria principal se organiza en 32 páginas de 128 bytes (mismo tamaño que los discos) lo cual resulta en un total de 4 Kb*.
+*Información en machine/mmu.hh
+3. Para modificar la cantidad de memoria simulada se debería modificar la constante MEMSIZE en code/bin/int.h, usada por code/bin/main.c.
+4. Un disco se divide en tracks y cada track se divide en sectores. Nachos tiene 128 bytes por sector de disco, 32 sectores por track y 32 tracks por disco* con lo cual cada disco tiene 128*32*32 = 131072 bytes = 128 Kb de disco
+*Información en machine/disk.hh
+5. Las instrucciones MIPS que simula NachOS se encuentran en bin/opstrings.c y suman un total de 128 instrucciones (64 operaciones comunes y 64 operaciones especiales).
+6. La función main de userprog se encuentra en threads/main.cc. El listado de archivos que incluyen la función main es:
+   * code/threads/main.cc:main(int argc, char **argv)
+   * code/bin/out.c:main(int argc, char *argv[])
+   * code/bin/coff2flat.c:main(int argc, char *argv[])
+   * code/bin/fuse/nachosfuse.c:main(int argc, char *argv[])
+   * code/bin/fuse/nachosfuse.c:        return fuse_main(argc, argv, &OPERATIONS, NULL);
+   * code/bin/readnoff.c:main(int argc, char *argv[])
+   * code/bin/disasm.c:main(int argc, char *argv[])
+   * code/bin/main.c:main(int argc, char *argv[])
+   * code/bin/coff2noff.c:main(int argc, char *argv[])
+   * code/userland/halt.c:main(void)
+   * code/userland/filetest.c:main(void)
+   * code/userland/shell.c:main(void)
+   * code/userland/sort.c:main(void)
+   * code/userland/echo.c:main(int argc, char *argv[])
+   * code/userland/matmult.c:main(void)
+   * code/userland/touch.c:main(int argc, char *argv[])
+   * code/userland/tiny_shell.c:main(void)
+7. main llama [a]a:
+   * Assert en lib/assert
+   * Debug en lib/utility
+   * Initialize en threads/system
+      1. Assert en lib/assert
+      2. ParseDebugOpts en threads/system
+      3. RandomInt en machine/system_dep
+      4. SetFlags en lib/debug
+      5. SetOpts en lib/debug
+      6. Assert en lib/assert
+      7. Timer en machine/timer
+      8. Thread en threads/thread
+      9. SetStatus en machine/interrupt
+      10. Enable en machine/interrupt
+      11. CallOnUserAbort en machine/system_dep
+      12. PreemptiveScheduler en threads/preemptive
+      13. Setup en threads/preemptive
+      14. Machine en machine/machine
+      15. SetExceptionHandlers en userprog/exception
+      16. SynchDisk en filesys/sinch_disk
+      17. FileSystem en filesys/file_system
+      18. PostOffice en network/post
+   * Debug en lib/utility
+      1. debug.Print en lib/debug
+   * SysInfo en threads/sys_info
+      1. No llama a ninguna función imprime por salida estándar.
+   * PrintVersion en threads/main
+      1. No llama a ninguna función imprime por salida estándar.
+   * ThreadTest en threads/thread_test
+      1. Debug en lib/utility
+      2. Choose en threads/trhead_test
+      3. Run en threads/thread_test
+   * StartProcess en userprog/prog_test
+      1. Assert en lib/assert
+      2. Open en filesys/file_system
+      3. InitRegisters en userprog/address_space
+      4. RestoreState en userprog/address_space
+      5. Run en userprog/debugger_command_manager
+   * ConsoleTest en userprog/prog_test
+      1. No llama a ninguna función definida en el proyecto
+   * Copy en filesys/fs_test
+      1. Assert en lib/assert
+      2. Debug en lib/utility
+      3. Create en filesys/filesystem
+      4. Open en filesys/filesystem
+      5. Write en filesys/filesystem
+   * Print implementado en  fIlesys/directory
+      1. filesys/file_system
+         1. FetchFrom en filesys/directory o en filesys/file_header
+         2. Print en filesys/directory o filesys/file_header o filesys/sf_test
+      2. filesys/file_header
+         1. FetchFrom en filesys/directory o en filesys/file_header
+         2. Print en filesys/directory o filesys/file_header o filesys/sf_test
+      3. filesys/directory
+         1. FetchFrom en filesys/directory o en filesys/file_header
+         2. Print en filesys/directory o filesys/file_header o filesys/sf_test
+      4. filesys/fs_test
+         1. Assert en lib/assert
+         2. Open en filesys/file_system
+         3. Read en filesys/open_file
+   * Remove implementado en
+      1. filesys/directory
+         1. FindIndex en filesys/directory
+      2. filesys/file_system
+         1. Assert en lib/assert
+         2. FetchFrom en filesys/directory o en filesys/file_header
+         3. Find en filesys/directory
+         4. FetchFrom en filesys/directory o en filesys/file_header
+         5. Deallocate en filesys/filesys_header
+         6. Clear en lib/bitmap
+         7. Remove en filesys/directory o en filesys/file_header o filesys/filesystem
+         8. Writeback en filesys/directory o filesys/file_header
+   * List en filesys/directory
+      1. No llama a ninguna función definida en el proyecto
+   * Check en filesys/file_system
+      1. Debug en lib/utility
+      2. Mark en lib/bitmap
+      3. GetRaw en filesys/directory o filesys/file_header
+      4. FetchFrom en filesys/directory o en filesys/file_header
+      5. CheckForError en filesys/file_system
+      6. CheckFileHeader en filesys/file_system
+      7. CheckDirectory en filesys/file_system
+      8. CheckBitmaps en filesys/file_system
+   * PerformanceTest en filesys/fs_test
+      1. Print en filesys/directory o filesys/file_header o filesys/file_system filesys/fs_test
+      2. FileWrite en filesys/fs_test
+      3. FileRead en filesys/fs_test
+      4. Remove en filesys/directory o en filesys/filesystem
+   * Delay en machine/system_dep
+      1. No llama a ninguna función definida en el proyecto
+   * MailTest en network/net_test
+      1. Send en network/post  o en machine/network
+      2. Receive en network/post o en machine/network
+      3. Halt en machine/interrupt
+   * Finish en threads/thread
+      1. SetLevel en machine/interrupt
+      2. Assert en lib/assert
+      3. Debug en lib/utility
+      4. GetName en threads/thread
+      5. Sleep en threads/thread 
+8. La función assert evalúa una condición, si es falsa imprime un mensaje de error y descarta el núcleo. Debug, por otro lado, imprime por salida estándar el archivo, la línea, la función dentro de la cual se llama y algunos argumentos extra. Adicionalmente puede incluir información específica del subsistema o del sistema en general si así se lo indica con una bandera opcional.
+9. Las banderas permiten agregar mensajes de depuración asociados a los distintos subsistemas o al sistema en general. En particular,
+   * `+` : Habilita todos los mensajes de depuración
+   * `t` : Hilos del sistema.
+   * `s` : Provee información sobre semáforos, locks, y condiciones.
+   * `i` : Interrumpe la simulación.
+   * `m` : Provee información sobre emulación de la máquina (requiere *USER_PROGRAM*).
+   * `d` : Provee información sobre emulación del disco (requiere *FILESYS*).
+   * `f` : Provee información sobre archivos del sistema (requiere *FILESYS*).
+   * `a` : Provee información sobre espacio de direcciones (requiere*USER_PROGRAM*).
+   * `e` : Provee información sobre manejo de excepciones (requiere *USER_PROGRAM*).
+   * `n`: Provee información sobre emulación de red (requiere *NETWORK*).
+10. Las constantes USER_PROGRAM, FILESYS_NEEDED, FILESYS_STUB y NETWORK están definidas en los makefile de los subsistemas userprog, vmem, filesys y network. Los primeros 3 subsistemas definen las constantes USER_PROGRAM, FILESYS_NEEDED y FILESYS_STUB y el subsistema network define las 4 constantes mencionadas.
+11. La información se encuentra en /threads/main.cc.
+   * Comandos generales: -d, -do, -p, -rs, -z
+   * Subsistema Threads: -tt
+   * Subsistema User Program: -s, -x, -tc
+   * Subsistema Filesys: -f, -cp, -pr, -rm, -ls, -D, -c, -tf
+   * Subsistema Network: -n, -id, -tn
+En particular la opción -rs hace que los ‘Yield’ se generen en momentos aleatorios (no necesariamente diferentes) durante la ejecución del programa.
+12. Los cambios se pueden visualizar en machine/sys_info.cc.
+
+
+13. List es una lista simplemente enlazada, mientras que SynchList es una lista sincronizada, es decir, una lista que cumple las siguientes invariantes:
+   * Los hilos que quieran remover un elemento de la lista esperarán hasta que la lista tenga al menos un elemento
+   * Sólo un hilo puede acceder a las estructuras de datos de la lista en cada momento
+14. Los cambios se pueden visualizar en threads/thread_test_simple.cc
+Nota: Se modificó el main.cc del subsistema threads para que no se llame a Halt (comentamos la llamada linea 138 de main.cc) ya que la VM para cuando no hay más hilos para ejecutar. Esto se hizo porque no encontramos ningún método wait que nos permitiera ver el comportamiento de un conjunto de más de un hilo.
+15. Los cambios se pueden visualizar en threads/thread_test_simple.cc
+16. Los cambios se pueden visualizar en threads/thread_test_simple.cc
+17. Los cambios se pueden visualizar en threads/thread_test_garden.cc en la función Turnstile
+18. Los cambios se pueden visualizar en threads/thread_test_garden_semaphore.cc y en su cabecera threads/thread_test_garden_semaphore.hh.
+No pudimos resolver los cambios a realizar en el makefile para poder probar el ejercicio.
+[a]terminar
