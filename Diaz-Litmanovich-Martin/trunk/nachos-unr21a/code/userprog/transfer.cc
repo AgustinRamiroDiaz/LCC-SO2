@@ -55,5 +55,11 @@ void WriteBufferToUser(const char *buffer, int userAddress,
 
 void WriteStringToUser(const char *string, int userAddress)
 {
-    // TODO: implement.
+    ASSERT(userAddress != 0);
+    ASSERT(string != nullptr);
+
+    do
+    {
+        ASSERT(machine->WriteMem(userAddress++, 1, (int)*string));
+    } while (*string++ != '\0');
 }
