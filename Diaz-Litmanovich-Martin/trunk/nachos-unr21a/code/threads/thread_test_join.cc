@@ -32,7 +32,8 @@ ThreadTestJoin()
     printf("Inicio del test\n");
 
     Thread *p = new Thread("Padre", true, 9);
-    Padre( (void *) nullptr);
+    p->Fork(Padre, (void *) nullptr);
+    p->Join();
 
     printf("Fin del test\n");
 

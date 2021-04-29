@@ -188,7 +188,7 @@ Thread::Finish()
     DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
     if (joinable)
-        channel->Send(0);
+        channel->Send(FINISHED);
 
     threadToBeDestroyed = currentThread;
     Sleep();  // Invokes `SWITCH`.

@@ -61,7 +61,6 @@ ThreadTestChannel()
         Thread *t = new Thread(name, false, 9);
         t->Fork(Receiver, (void *) n);
     }
-    
 
     // Mecanismo reemplazo de join
     for (unsigned i = 0; i < CANT_SENDERS + CANT_RECEIVERS - 1; i++) {
@@ -69,6 +68,5 @@ ThreadTestChannel()
           currentThread->Yield();
       }
     }
-
     printf("Todos los senders y receivers terminaron");
 }

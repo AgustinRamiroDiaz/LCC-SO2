@@ -61,7 +61,6 @@ const unsigned MACHINE_STATE_SIZE = 17;
 ///
 /// WATCH OUT IF THIS IS NOT BIG ENOUGH!!!!!
 const unsigned STACK_SIZE = 4 * 1024;
-const int FINISHED = 1;
 
 
 /// Thread state.
@@ -71,6 +70,7 @@ enum ThreadStatus {
     READY,
     BLOCKED,
     NUM_THREAD_STATUS,
+    FINISHED
 };
 
 /// The following class defines a “thread control block” -- which represents
