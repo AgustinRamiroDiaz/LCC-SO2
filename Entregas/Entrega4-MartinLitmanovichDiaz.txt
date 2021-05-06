@@ -1,0 +1,63 @@
+﻿Delfina Martín, Ignacio Litmanovich, Agustín Diaz
+
+*Ejercicio 1*
+
+La ronda egoísta se comporta igual que el algoritmo multicolas con niveles de prioridad de 2 niveles cuando los procesos son cortos y cuando los quantums para las diferentes (en FB) colas son iguales.
+
+
+El nivel de prioridad 0 del algoritmo multi cola con 2 niveles representa la cola de procesos aceptados en SRR (el cual utiliza el algoritmo round robin) y el nivel de prioridad 1 en FB representa la cola de procesos nuevos en SRR.
+
+
+En SRR los procesos solamente se pueden cambiar de la cola de procesos nuevos a la cola de procesos aceptados entonces, para que coincida con FB, los procesos deberían poder promoverse pero no degradarse. Este caso se da cuando los procesos son cortos ya que se terminan de ejecutar antes de ser degradados.
+
+
+Otro caso (aunque de borde) en el que los algoritmos coinciden es cuando el quantum asignado para ambas colas es muy grande: ambos se comportan como FIFO.
+
+
+*Ejercicio 2*
+
+Las mejoras del algoritmo de multicolas con niveles de prioridad: aging y retroalimentación inversa son utilizadas en diferentes SO en la actualidad. La primera técnica consiste en degradar un proceso según algún criterio en particular, por ejemplo, la cantidad de tiempo que se ejecutó o la cantidad de veces que reanudó su ejecución (con posibles bloqueos intermedios).
+
+
+Por otro lado, la técnica de retroalimentación inversa consiste en promover procesos largos luego de que fueron degradados con el fin de evitar la inanición.
+
+
+Algunas de las ventajas de la técnica aging son bastante evidentes: evita que algunos procesos acaparen la atención del procesador mucho tiempo y permite que procesos con menor prioridad tengan chance de comenzar o continuar su ejecución. Pero esto trae desventajas apareadas: los procesos largos o procesos que hayan llegado en momentos inoportunos luego de ser degradados pueden estar mucho tiempo con baja prioridad y consecuentemente pueden sufrir inanición. Los procesos cortos, en cambio, suelen ser favorecidos: raramente son degradados antes de terminar su ejecución.
+
+
+La retroalimentación inversa en este sentido permite paliar parte de los problemas generados por las duras degradaciones.
+
+
+La técnica aging combinada con otros mecanismos de planificación permite ajustar dos medidas: cantidad de veces que un proceso puede ser ejecutado antes de ser degradado y la duración del quantum asignado por nivel (cola). Esto último contribuye a que los procesos de baja prioridad puedan ejecutarse un tiempo más largo y avanzar lo cual compensa en parte el retardo que sufrieron. Además, este último parámetro suele ajustarse de forma de que el incremento hacia colas de menor prioridad sea de forma suave para evitar que procesos de baja prioridad (procesos que muchas veces son interactivos y/o están limitados por I/O) acaparen (y desaprovechen) el procesador.
+
+*Ejercicio 3*
+
+code/threads > \time -f "Tiempo de sistema: %S\nTiempo de usuario: %U\nTiempo desocupado: %E\nUtilizacion CPU: %P\n" make
+>  :: Compiling main.o
+    ...
+    Tiempo de sistema: 0.18
+    Tiempo de usuario: 0.81
+    Tiempo desocupado: 0:01.00
+    Utilizacion CPU: 99%
+
+
+                                         Para make threads                mínimo        máximo
+Tiempo de núcleo*                        0.01s                                ~0	~1
+Tiempo de sistema                        0.18s                                >0        -
+Tiempo de usuario                        0.81s                                ~0        \inf
+Tiempo de uso del procesador        	 0.99s                                **        **
+Tiempo desocupado:                       0:01.00                              0         \inf
+Utilización CPU:                         99%                                  0%        100%
+
+
+* [(100 - Utilización CPU) * (Tiempo de uso del procesador + Tiempo desocupado)]
+** [Tiempo de sistema + Tiempo de usuario]
+
+
+El caso mínimo para tiempo de núcleo (valores muy cercanos a 0) se puede dar con algoritmos de planificación de mínima carga administrativa como el FIFO. El máximo se puede dar cuando se utiliza el algoritmo de planificación round robin con q muy chico y en particular mucho menor a la duración de un proceso promedio.
+
+
+El caso mínimo de tiempo de usuario (casi nulo) se puede dar cuando un proceso no hace llamadas al sistema y el máximo se puede dar en un proceso que dura todo lo que la máquina esté prendida (haciendo llamadas al sistema indefinidamente). Este número puede ser potencialmente muy grande, de ahí \inf.
+
+
+El mínimo tiempo desocupado lo puede obtener un proceso que use de forma óptima la CPU (por errores de redondeo esto puede ocurrir). El caso de idle máximo se puede dar cuando se produce un deadlock.
