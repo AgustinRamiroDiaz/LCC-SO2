@@ -27,9 +27,9 @@ private:
         
   Lock *lock;
     
-  Condition *canSend;
-  Condition *canReceive;
-  Condition *doneSending;
+  Condition *msgSent;
+  Condition *msgReceived;
+  Condition *done;
   
 };
 

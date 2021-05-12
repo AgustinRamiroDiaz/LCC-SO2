@@ -172,8 +172,14 @@ Scheduler::GetNQueue()
 void
 Scheduler::PromoteThread(Thread *t, int newPriority)
 {
-  readyList[t->GetPriority()]->Remove(t);
+  ASSERT(newPriority >= 0);
+  ASSERT(newPriority < n_queues);
 
-  t->SetPriority(newPriority);
-  ReadyToRun(t);
+  int oldPriority = t->GetPriority();
+
+  if (oldPriority != newPriority) {
+      readyList[oldPriority]->Remove(t);
+      t->SetPriority(newPriority);
+      ReadyToRun(t);
+  }
 }

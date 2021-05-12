@@ -4,17 +4,18 @@ Channel::Channel(const char *debugName)
 {
     name = debugName;
     buffer = nullptr;
-    lock = new Lock(debugName);
-    canSend = new Condition(debugName, lock);
-    canReceive = new Condition(debugName, lock);
-    doneSending = new Condition(debugName, lock);
+    lock = new Lock(name);
+    msgSent = new Condition(name, lock);
+    msgReceived = new Condition(name, lock);
+    done = new Condition(name, lock);
 }
 
 Channel::~Channel()
 {
     delete lock;
-    delete canSend;
-    delete doneSending;
+    delete msgSent;
+    delete msgReceived;
+    delete done;
 }
 
 const char *
@@ -28,14 +29,13 @@ Channel::Send(int message)
 {   
     lock->Acquire();
 
-    while(not buffer)
-        canSend->Wait();
+    while (buffer != nullptr)
+        done->Wait();
 
     *buffer = message;
-    buffer = nullptr;
 
-    canReceive->Signal();
-    doneSending->Signal();
+    msgSent->Signal();
+    msgReceived->Wait();
 
     lock->Release();
 }
@@ -45,15 +45,14 @@ Channel::Receive(int *message)
 {   
     lock->Acquire();
 
-    while(buffer)
-        canReceive->Wait();
+    while(buffer == nullptr)
+        msgSent->Wait();
 
-    buffer = message;
+    *message = *buffer;
+    buffer = nullptr;
 
-    canSend->Signal();
-
-    while(buffer)
-        doneSending->Wait();
+    msgReceived->Signal();
+    done->Signal();
 
     lock->Release();
 }
