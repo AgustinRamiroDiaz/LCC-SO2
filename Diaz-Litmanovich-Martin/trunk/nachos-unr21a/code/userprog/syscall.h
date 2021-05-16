@@ -31,6 +31,7 @@
 #define SC_CLOSE   13
 #define SC_READ    14
 #define SC_WRITE   15
+#define SC_PRINT   16
 
 
 #ifndef IN_ASM
@@ -58,7 +59,7 @@ typedef int SpaceId;
 
 /// Run the executable, stored in the Nachos file `name`, and return the
 /// address space identifier.
-SpaceId Exec(char *name);
+SpaceId Exec(char *name, char **args, int enableJoin);
 
 /// Only return once the the user program `id` has finished.
 ///
@@ -76,6 +77,10 @@ int Fork(void (*func)(void));
 /// Yield the CPU to another runnable thread, whether in this address space
 /// or not.
 void Yield();
+
+
+// Print scheduler state
+void Print();
 
 
 /// File system operations: `Create`, `Open`, `Read`, `Write`, `Close`.

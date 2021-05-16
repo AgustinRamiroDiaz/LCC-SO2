@@ -12,6 +12,20 @@
 
 #include <string.h>
 
+static uint32_t VirtualPageIndex(uint32_t virtualAddress){
+  return virtualAddress / PAGE_SIZE;
+}
+
+static uint32_t VirtualPageOffset(uint32_t virtualAddress){
+  return virtualAddress % PAGE_SIZE;
+}
+
+static unsigned VirtualToPhysical(unsigned virtualAddr, TranslationEntry *pageTable) {
+    unsigned virtualPageIndex = VirtualPageIndex(virtualAddr);
+    unsigned virtualPageOffset = VirtualPageOffset(virtualAddr);
+    unsigned frame = pageTable[virtualPageIndex].physicalPage;
+    return frame * PAGE_SIZE + virtualPageOffset;
+}
 
 /// First, set up the translation from program memory to physical memory.
 /// For now, this is really simple (1:1), since we are only uniprogramming,
@@ -30,57 +44,76 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
     numPages = DivRoundUp(size, PAGE_SIZE);
     size = numPages * PAGE_SIZE;
 
-    ASSERT(numPages <= NUM_PHYS_PAGES);
-      // Check we are not trying to run anything too big -- at least until we
-      // have virtual memory.
+    ASSERT(numPages <= pageMap->CountClear());
+      // Cantidad de páginas no inicializadas
 
     DEBUG('a', "Initializing address space, num pages %u, size %u\n",
           numPages, size);
 
-    // First, set up the translation.
 
+    char *mainMemory = machine->GetMMU()->mainMemory;
+
+    // First, set up the translation.
+    int newPage;
     pageTable = new TranslationEntry[numPages];
     for (unsigned i = 0; i < numPages; i++) {
         pageTable[i].virtualPage  = i;
-          // For now, virtual page number = physical page number.
-        pageTable[i].physicalPage = i;
+          
+        // Virtual page number not neccessarily equal to physical page number.
+        newPage = pageMap->Find();
+        ASSERT(newPage != -1);
+        pageTable[i].physicalPage = (unsigned int) newPage;
+
         pageTable[i].valid        = true;
         pageTable[i].use          = false;
         pageTable[i].dirty        = false;
         pageTable[i].readOnly     = false;
           // If the code segment was entirely on a separate page, we could
           // set its pages to be read-only.
+
+        // Zero out page
+        unsigned pageIndex = pageTable[i].physicalPage;
+        memset(mainMemory + pageIndex * PAGE_SIZE, 0, PAGE_SIZE);
     }
-
-    char *mainMemory = machine->GetMMU()->mainMemory;
-
-    // Zero out the entire address space, to zero the unitialized data
-    // segment and the stack segment.
-    memset(mainMemory, 0, size);
 
     // Then, copy in the code and data segments into memory.
     uint32_t codeSize = exe.GetCodeSize();
     uint32_t initDataSize = exe.GetInitDataSize();
+
     if (codeSize > 0) {
         uint32_t virtualAddr = exe.GetCodeAddr();
         DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
               virtualAddr, codeSize);
-        exe.ReadCodeBlock(&mainMemory[virtualAddr], codeSize, 0);
+
+        // Ver última y primera página
+        unsigned physicalAddr;
+        for(unsigned codeByte = 0; codeByte < codeSize; codeByte++){
+          physicalAddr = VirtualToPhysical(virtualAddr + codeByte, pageTable);
+          exe.ReadCodeBlock(mainMemory + physicalAddr, 1, codeByte);
+        }
+        
     }
     if (initDataSize > 0) {
         uint32_t virtualAddr = exe.GetInitDataAddr();
         DEBUG('a', "Initializing data segment, at 0x%X, size %u\n",
               virtualAddr, initDataSize);
         exe.ReadDataBlock(&mainMemory[virtualAddr], initDataSize, 0);
+
+        unsigned physicalAddr;
+        for(unsigned codeByte = 0; codeByte < initDataSize; codeByte++){
+          physicalAddr = VirtualToPhysical(virtualAddr + codeByte, pageTable);
+          exe.ReadDataBlock(mainMemory + physicalAddr, 1, codeByte); //PAGE_SIZE en vez de 1?
+        }
     }
 
 }
 
 /// Deallocate an address space.
-///
-/// Nothing for now!
 AddressSpace::~AddressSpace()
 {
+    for (unsigned i = 0; i < numPages; i++)
+        pageMap->Clear(pageTable[i].physicalPage);
+
     delete [] pageTable;
 }
 

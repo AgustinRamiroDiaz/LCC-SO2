@@ -3,3 +3,7 @@
 .svn/
 nachos
 *.depends
+Diaz-Litmanovich-Martin/trunk/nachos-unr21a/code/bin/coff2flat
+Diaz-Litmanovich-Martin/trunk/nachos-unr21a/code/bin/coff2noff
+Diaz-Litmanovich-Martin/trunk/nachos-unr21a/code/bin/disassemble
+Diaz-Litmanovich-Martin/trunk/nachos-unr21a/code/bin/readnoff

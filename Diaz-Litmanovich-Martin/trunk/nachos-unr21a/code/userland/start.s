@@ -133,6 +133,12 @@ Close:
         j       $31
         .end    Close
 
+Print:
+        addiu   $2, $0, SC_PRINT
+        syscall
+        j       $31
+        .end    Print
+
 /// Dummy function to keep gcc happy.
         .globl  __main
         .ent    __main

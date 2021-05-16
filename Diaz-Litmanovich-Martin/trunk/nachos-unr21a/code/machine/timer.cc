@@ -73,6 +73,7 @@ Timer::TimerExpired()
 int
 Timer::TimeOfNextInterrupt()
 {
+    DEBUG('z',"Time of next interrupt\n");
     if (randomize) {
         return 1 + SystemDep::Random() % (TIMER_TICKS * 2);
     } else {

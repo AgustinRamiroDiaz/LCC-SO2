@@ -93,6 +93,7 @@ void Print(const char *file);
 void PerformanceTest(void);
 void StartProcess(const char *file);
 void ConsoleTest(const char *in, const char *out);
+void SynchConsoleTest(const char *in, const char *out);
 void MailTest(int networkID);
 
 static inline void
@@ -154,6 +155,17 @@ main(int argc, char **argv)
             interrupt->Halt();  // Once we start the console, then Nachos
                                 // will loop forever waiting for console
                                 // input.
+        } else if (!strcmp(*argv, "-tsc")) {  // Test the synchronous console.
+            if (argc == 1)
+                SynchConsoleTest(nullptr, nullptr);
+            else {
+                ASSERT(argc > 2);
+                SynchConsoleTest(*(argv + 1), *(argv + 2));
+                argCount = 3;
+            }
+            interrupt->Halt();  // Once we start the console, then Nachos
+                                // will loop forever waiting for console
+                                // input.
         }
 #endif
 #ifdef FILESYS
@@ -194,7 +206,7 @@ main(int argc, char **argv)
 #endif // NETWORK
     }
 
-    currentThread->Finish();
+    currentThread->Finish(0);
       // NOTE: if the procedure `main` returns, then the program `nachos`
       // will exit (as any other normal program would).  But there may be
       // other threads on the ready list.  We switch to those threads by

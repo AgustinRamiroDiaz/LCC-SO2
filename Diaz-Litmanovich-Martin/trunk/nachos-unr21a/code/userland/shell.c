@@ -1,6 +1,5 @@
 #include "syscall.h"
 
-
 #define MAX_LINE_SIZE  60
 #define MAX_ARG_COUNT  32
 #define ARG_SEPARATOR  ' '
@@ -117,20 +116,14 @@ main(void)
             continue;
         }
 
-        // Comment and uncomment according to whether command line arguments
-        // are given in the system call or not.
-        const SpaceId newProc = Exec(line);
-        //const SpaceId newProc = Exec(line, argv);
-
-        // TODO: check for errors when calling `Exec`; this depends on how
-        //       errors are reported.
-
-        Join(newProc);
-        // TODO: is it necessary to check for errors after `Join` too, or
-        //       can you be sure that, with the implementation of the system
-        //       call handler you made, it will never give an error?; what
-        //       happens if tomorrow the implementation changes and new
-        //       error conditions appear?
+        // Viejo exec
+        // const SpaceId newProc = Exec(line);
+        if(line[0] == '&') {
+            const SpaceId newProc = Exec(line + 1, argv, 0);
+        } else {
+            const SpaceId newProc = Exec(line, argv, 1);
+            Join(newProc);
+        }
     }
 
     // Never reached.

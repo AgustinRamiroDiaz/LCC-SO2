@@ -38,13 +38,16 @@
 #ifndef NACHOS_THREADS_THREAD__HH
 #define NACHOS_THREADS_THREAD__HH
 
-
-#include "lib/utility.hh"
+//#include "lib/utility.hh"
 class Channel;
+#include "userprog/syscall.h"
+#include "filesys/open_file.hh"
+#include "lib/utility.hh"
 
 #ifdef USER_PROGRAM
 #include "machine/machine.hh"
 #include "userprog/address_space.hh"
+#include "lib/table.hh"
 #endif
 
 #include <stdint.h>
@@ -95,10 +98,26 @@ private:
     /// All registers except for `stackTop`.
     uintptr_t machineState[MACHINE_STATE_SIZE];
 
+    #ifdef USER_PROGRAM
+
+    // Table used to map the OpenFileIds (int) to OpenFile pointers
+    // There are two reserved entries reserved for synchConsole
+    // in the table, 0 and 1.
+    const int ioStandard = 2;
+
+    Table <OpenFile*> *fileTable;
+
+    int fileTableSize;
+
+    #endif
+
 public:
 
-    /// Initialize a `Thread`.
+    /// Initialize a `Thread` with priority
     Thread(const char *debugName, bool _joinbale, int _priority);
+
+    /// Initialize a `Thread` with priority default
+    Thread(const char *debugName, bool _joinbale);
 
     /// Deallocate a Thread.
     ///
@@ -118,10 +137,10 @@ public:
     void Sleep();
 
     /// The thread is done executing.
-    void Finish();
+    void Finish(int returnValue);
 
     /// Wait for child to finish
-    void Join();
+    int Join();
 
     /// Check if thread has overflowed its stack.
     void CheckOverflow() const;
@@ -137,6 +156,32 @@ public:
 
     // Set thread priority
     void SetPriority(int newPriority);
+
+    #ifdef USER_PROGRAM
+
+    // Adds a file to the FileTable, -1 in case of failure
+    int AddFile(OpenFile* filePtr);
+
+    // Returns File location at fileId position in FileTable
+    OpenFile* GetFile(OpenFileId fileId);
+
+    // Returns true iff fileId entry in Filetable is not null
+    bool HasFile(OpenFileId fileId);
+
+    // Removes fileIdEntry in Filetable
+    void RemoveFile(OpenFileId fileId);
+
+    // Removes al fileId entries in Filetable
+    void RemoveAllFiles();
+
+    // Returns current process' spaceId
+    SpaceId GetSpaceId();
+
+public:
+  
+    SpaceId spaceId;
+
+    #endif
 
 private:
     // Some of the private data for this class is listed above.

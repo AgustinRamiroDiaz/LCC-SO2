@@ -11,6 +11,7 @@
 
 #include "address_space.hh"
 #include "machine/console.hh"
+#include "synch_console.hh"
 #include "threads/semaphore.hh"
 #include "threads/system.hh"
 
@@ -88,5 +89,18 @@ ConsoleTest(const char *in, const char *out)
         if (ch == 'q') {
             return;  // If `q`, then quit.
         }
+    }
+}
+
+void
+SynchConsoleTest(const char *in, const char *out)
+{
+    SynchConsole* testConsole = new SynchConsole(in, out);
+
+    for (;;) {
+        char ch = testConsole->GetChar();
+        testConsole->PutChar(ch);  // Echo it!
+        if (ch == 'q')
+            return;  // If `q`, then quit.
     }
 }

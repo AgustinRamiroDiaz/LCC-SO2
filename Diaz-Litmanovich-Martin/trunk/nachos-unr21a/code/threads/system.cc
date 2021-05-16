@@ -44,6 +44,9 @@ SynchDisk *synchDisk;
 
 #ifdef USER_PROGRAM  // Requires either *FILESYS* or *FILESYS_STUB*.
 Machine *machine;  ///< User program memory and registers.
+SynchConsole *synchConsole;
+Table <Thread*> *threadTable;
+Bitmap *pageMap;
 #endif
 
 #ifdef NETWORK
@@ -136,6 +139,7 @@ Initialize(int argc, char **argv)
 
 #ifdef USER_PROGRAM
     bool debugUserProg = false;  // Single step user program.
+    threadTable = new Table <Thread*>();
 #endif
 #ifdef FILESYS_NEEDED
     bool format = false;  // Format disk.
@@ -204,9 +208,8 @@ Initialize(int argc, char **argv)
     stats = new Statistics;      // Collect statistics.
     interrupt = new Interrupt;   // Start up interrupt handling.
     scheduler = new Scheduler;   // Initialize the ready queue.
-    if (randomYield) {           // Start the timer (if needed).
-        timer = new Timer(TimerInterruptHandler, 0, randomYield);
-    }
+
+    timer = new Timer(TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = nullptr;
 
@@ -228,6 +231,10 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     Debugger *d = debugUserProg ? new Debugger : nullptr;
     machine = new Machine(d);  // This must come first.
+
+    synchConsole = new SynchConsole(nullptr, nullptr);
+    pageMap = new Bitmap(NUM_PHYS_PAGES);
+
     SetExceptionHandlers();
 #endif
 
@@ -259,6 +266,9 @@ Cleanup()
 
 #ifdef USER_PROGRAM
     delete machine;
+    delete synchConsole;
+    delete threadTable;
+    delete pageMap;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -272,6 +282,7 @@ Cleanup()
     delete timer;
     delete scheduler;
     delete interrupt;
+    delete stats;
 
     exit(0);
 }

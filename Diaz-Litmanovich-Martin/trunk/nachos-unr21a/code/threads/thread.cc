@@ -22,6 +22,7 @@
 #include "system.hh"
 #include "channel.hh"
 
+#include <algorithm>
 #include <inttypes.h>
 #include <stdio.h>
 
@@ -41,14 +42,14 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName, bool _joinbale, int _priority)
+Thread::Thread(const char *threadName, bool _joinable, int _priority)
 {
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
     status   = JUST_CREATED;
 
-    joinable = _joinbale;
+    joinable = _joinable;
     if (joinable) {
         channel = new Channel("Join channel");
     } else {
@@ -58,9 +59,22 @@ Thread::Thread(const char *threadName, bool _joinbale, int _priority)
     ASSERT(_priority >= 0 && _priority < scheduler->GetNQueue());
     priority = _priority;
 
-#ifdef USER_PROGRAM
-    space    = nullptr;
-#endif
+    #ifdef USER_PROGRAM
+        space    = nullptr;
+
+        fileTable = new Table<OpenFile*>();
+        for(int i = 0; i < ioStandard; fileTable->Add(nullptr), i++);
+        fileTableSize = 0;
+
+        //system.cc
+        spaceId = threadTable->Add(this);
+
+    #endif
+}
+
+Thread::Thread(const char *threadName, bool _joinable) {
+    // Launch thread with minimum priority
+    Thread(threadName, _joinable, 0);
 }
 
 /// De-allocate a thread.
@@ -83,6 +97,14 @@ Thread::~Thread()
 
     if (joinable)
         delete channel;
+
+    #ifdef USER_PROGRAM
+        RemoveAllFiles();
+        delete fileTable;
+
+        threadTable->Remove(spaceId);
+        //if (space) delete space;
+    #endif
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -117,7 +139,7 @@ Thread::Fork(VoidFunctionPtr func, void *arg)
     interrupt->SetLevel(oldLevel);
 }
 
-void
+int
 Thread::Join()
 {
     ASSERT(joinable);
@@ -127,6 +149,7 @@ Thread::Join()
     channel->Receive(&message);
 
     ASSERT(message == FINISHED);
+    return message;
 }
 
 /// Check a thread's stack to see if it has overrun the space that has been
@@ -180,7 +203,7 @@ Thread::Print() const
 /// NOTE: we disable interrupts, so that we do not get a time slice between
 /// setting `threadToBeDestroyed`, and going to sleep.
 void
-Thread::Finish()
+Thread::Finish(int returnValue)
 {
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
@@ -188,7 +211,7 @@ Thread::Finish()
     DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
     if (joinable)
-        channel->Send(FINISHED);
+        channel->Send(returnValue);
 
     threadToBeDestroyed = currentThread;
     Sleep();  // Invokes `SWITCH`.
@@ -267,7 +290,7 @@ Thread::Sleep()
 static void
 ThreadFinish()
 {
-    currentThread->Finish();
+    currentThread->Finish(FINISHED);
 }
 
 static void
@@ -350,6 +373,47 @@ Thread::RestoreUserState()
     for (unsigned i = 0; i < NUM_TOTAL_REGS; i++) {
         machine->WriteRegister(i, userRegisters[i]);
     }
+}
+
+int
+Thread::AddFile(OpenFile* filePtr) {
+    int fileId = fileTable -> Add(filePtr);
+
+    if (fileId != -1)
+        fileTableSize = std::max(fileTableSize, SpaceId(fileId));
+
+    return fileId;
+}
+
+bool
+Thread::HasFile(OpenFileId fileId) {
+    bool found = fileTable -> HasKey(fileId);
+    return found;
+}
+
+void
+Thread::RemoveFile(OpenFileId fileId) {
+    OpenFile *removedFile = fileTable -> Remove(fileId);
+    delete removedFile;
+}
+
+// Removes al fileId entries in Filetable
+void
+Thread::RemoveAllFiles() {
+    for(int i = ioStandard; i <= fileTableSize; i++)
+        if(fileTable -> HasKey(i))
+            RemoveFile(i);
+}
+
+OpenFile*
+Thread::GetFile(OpenFileId fileId) {
+    OpenFile *filePtr = fileTable->Get(fileId);
+    return filePtr;
+}
+
+SpaceId
+Thread::GetSpaceId() {
+  return spaceId;
 }
 
 #endif
