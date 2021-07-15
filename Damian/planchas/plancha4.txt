@@ -1,0 +1,44 @@
+2. Calcule el porcentaje de aciertos ("hit ratio") de la TLB (al menos para dos
+   programas razonablemente grandes). Vea como se modifica este porcentaje al agregar
+   mas entradas a la TLB (32 entradas = MIPS R2000, 64 = MIPS R4000). ¿Que tamaño
+   sugerir ́ıa para la TLB?
+
+2 entradas:
+matmult: 87.02%
+sort:    82.77%
+
+4 entradas:
+matmult: 93.38%
+sort:    94.47%
+
+8 entradas:
+matmult: 97.03%
+sort:    99.92%
+
+16 entradas:
+matmult: 97.89%
+sort:    99.95%
+
+32 entradas:
+matmult: 98.52%
+sort:    99.98%
+
+Teniendo en cuenta que el crecimiento del ratio parece ser logaritmico y que el
+costo del hardware debe ser alto, un tamaño de 8 entradas parece ser apropiado.
+
+6. Compare el rendimiento (cantidad de accesos a disco, fallos de paginas totales,
+   etc.) entre los dos puntos anteriores y tambien contra el algoritmo ́optimo.
+   (hagalo al menos con dos programas).
+
+Random:
+matmult: 165 paginas cargadas a memoria, 103 paginas escritas al disco.
+sort:    796 paginas cargadas a memoria, 672 paginas escritas al disco.
+
+FIFO:
+matmult: 166  paginas cargadas a memoria, 108  paginas escritas al disco.
+sort:    3302 paginas cargadas a memoria, 2881 paginas escritas al disco.
+
+Clock:
+matmult: 134  paginas cargadas a memoria, 93   paginas escritas al disco.
+sort:    2919 paginas cargadas a memoria, 2782 paginas escritas al disco.
+
